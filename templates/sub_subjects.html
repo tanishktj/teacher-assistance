@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Class {{ grade }} - {{ subject_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav class="breadcrumb-custom mb-4" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none">{{ t.home }}</a></li>
+            <li class="breadcrumb-item"><a href="/subjects/{{ grade }}" class="text-decoration-none">{{ t.class }} {{ grade }}</a></li>
+            <li class="breadcrumb-item active">{{ t[subject] if subject in t else subject_name }}</li>
+        </ol>
+    </nav>
+
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">
+            {% if subject == 'science' %}
+            <i class="fas fa-atom me-2" style="color: var(--orange);"></i>
+            {% elif subject == 'mathematics' %}
+            <i class="fas fa-square-root-alt me-2" style="color: var(--orange);"></i>
+            {% elif subject == 'english' %}
+            <i class="fas fa-book-open me-2" style="color: var(--orange);"></i>
+            {% elif subject == 'social_science' %}
+            <i class="fas fa-globe-asia me-2" style="color: var(--orange);"></i>
+            {% elif subject == 'hindi' %}
+            <i class="fas fa-language me-2" style="color: var(--orange);"></i>
+            {% else %}
+            <i class="fas fa-book me-2" style="color: var(--orange);"></i>
+            {% endif %}
+            {{ t.class }} {{ grade }} - {{ t[subject] if subject in t else subject_name }}
+        </h2>
+        <p class="text-muted">{{ t.choose_branch_generic if 'choose_branch_generic' in t else 'Choose a topic area' }}</p>
+    </div>
+
+    <div class="row justify-content-center g-4">
+        {% for key, name in sub_subjects.items() %}
+        <div class="col-md-4">
+            <a href="/chat/{{ grade }}/{{ key }}" class="text-decoration-none">
+                <div class="card card-hover text-center p-4">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            {% if key == 'physics' %}
+                            <i class="fas fa-bolt fa-3x" style="color: #f59e0b;"></i>
+                            {% elif key == 'chemistry' %}
+                            <i class="fas fa-vial fa-3x" style="color: #10b981;"></i>
+                            {% elif key == 'biology' %}
+                            <i class="fas fa-leaf fa-3x" style="color: #3b82f6;"></i>
+                            {% elif key == 'algebra' %}
+                            <i class="fas fa-superscript fa-3x" style="color: #8b5cf6;"></i>
+                            {% elif key == 'geometry' %}
+                            <i class="fas fa-shapes fa-3x" style="color: #ec4899;"></i>
+                            {% elif key == 'trigonometry' %}
+                            <i class="fas fa-drafting-compass fa-3x" style="color: #14b8a6;"></i>
+                            {% elif key == 'statistics' %}
+                            <i class="fas fa-chart-bar fa-3x" style="color: #f97316;"></i>
+                            {% elif key == 'number_systems' %}
+                            <i class="fas fa-hashtag fa-3x" style="color: #6366f1;"></i>
+                            {% elif key == 'coordinate_geometry' %}
+                            <i class="fas fa-crosshairs fa-3x" style="color: #0ea5e9;"></i>
+                            {% elif key == 'mensuration' %}
+                            <i class="fas fa-ruler-combined fa-3x" style="color: #84cc16;"></i>
+                            {% elif key == 'literature' %}
+                            <i class="fas fa-book fa-3x" style="color: #8b5cf6;"></i>
+                            {% elif key == 'grammar' %}
+                            <i class="fas fa-spell-check fa-3x" style="color: #06b6d4;"></i>
+                            {% elif key == 'writing' %}
+                            <i class="fas fa-pen-fancy fa-3x" style="color: #f59e0b;"></i>
+                            {% elif key == 'history' %}
+                            <i class="fas fa-landmark fa-3x" style="color: #a855f7;"></i>
+                            {% elif key == 'geography' %}
+                            <i class="fas fa-mountain fa-3x" style="color: #22c55e;"></i>
+                            {% elif key == 'political_science' %}
+                            <i class="fas fa-balance-scale fa-3x" style="color: #3b82f6;"></i>
+                            {% elif key == 'economics' %}
+                            <i class="fas fa-chart-line fa-3x" style="color: #eab308;"></i>
+                            {% elif key == 'hindi_literature' %}
+                            <i class="fas fa-book fa-3x" style="color: #ef4444;"></i>
+                            {% elif key == 'hindi_grammar' %}
+                            <i class="fas fa-spell-check fa-3x" style="color: #f97316;"></i>
+                            {% elif key == 'hindi_writing' %}
+                            <i class="fas fa-pen-fancy fa-3x" style="color: #dc2626;"></i>
+                            {% else %}
+                            <i class="fas fa-book fa-3x" style="color: #6b7280;"></i>
+                            {% endif %}
+                        </div>
+                        <h4 class="card-title fw-bold text-dark">{{ t[key] if key in t else name }}</h4>
+                        <p class="text-muted small">{{ t[key + '_desc'] if (key + '_desc') in t else '' }}</p>
+                        <span class="btn btn-primary-custom mt-2">
+                            <i class="fas fa-arrow-right me-2"></i>{{ t.start_teaching }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

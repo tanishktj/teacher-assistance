@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Teacher Assistant{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --orange: #f97316;
+            --orange-light: #fff7ed;
+            --orange-mid: #fed7aa;
+            --orange-dark: #ea6c0a;
+            --bg: #f5f6f8;
+            --white: #ffffff;
+            --border: #e5e7eb;
+            --border-light: #f0f1f3;
+            --text: #111827;
+            --text-2: #374151;
+            --text-3: #6b7280;
+            --text-4: #9ca3af;
+            --green: #10b981;
+            --green-bg: #ecfdf5;
+            --red: #ef4444;
+            --red-bg: #fef2f2;
+            --yellow: #f59e0b;
+            --yellow-bg: #fffbeb;
+            --blue: #3b82f6;
+            --blue-bg: #eff6ff;
+            --purple: #8b5cf6;
+            --purple-bg: #f5f3ff;
+            --teal: #0d9488;
+            --bg-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        body {
+            font-family: 'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        .navbar-custom {
+            background: var(--bg-gradient);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-custom .navbar-brand {
+            color: white;
+            font-weight: 900;
+            font-size: 1.4rem;
+            letter-spacing: -.4px;
+        }
+
+        .navbar-custom .nav-link {
+            color: rgba(255,255,255,0.9);
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+
+        .navbar-custom .nav-link:hover {
+            color: var(--orange-mid);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            background: var(--white);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+            border-color: var(--orange-mid);
+        }
+
+        .hero-section {
+            background: var(--bg-gradient);
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(249,115,22,.25) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .btn-primary-custom {
+            background: var(--orange);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-weight: 700;
+            transition: all 0.15s;
+            color: white;
+        }
+
+        .btn-primary-custom:hover {
+            background: var(--orange-dark);
+            transform: scale(1.02);
+        }
+
+        .breadcrumb-custom {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .badge {
+            font-weight: 800;
+        }
+
+        .bg-primary-subtle {
+            background-color: var(--orange-light) !important;
+        }
+
+        .text-primary {
+            color: var(--orange) !important;
+        }
+
+        /* Language Dropdown */
+        .lang-dropdown {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            transition: all 0.15s;
+            margin: 0 8px;
+        }
+
+        .lang-dropdown:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--orange-mid);
+            color: white;
+        }
+
+        .dropdown-menu {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 8px;
+            min-width: 200px;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-2);
+            transition: all 0.15s;
+        }
+
+        .dropdown-item:hover {
+            background: var(--orange-light);
+            color: var(--orange);
+        }
+
+        .dropdown-item.active {
+            background: var(--orange);
+            color: white;
+        }
+
+        .dropdown-item.active:hover {
+            background: var(--orange-dark);
+        }
+    </style>
+
+    <style>
+        {% block extra_styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/" style="gap: 12px;">
+                <svg width="40" height="40" viewBox="0 0 100 100" style="flex-shrink: 0;">
+                    <rect width="100" height="100" rx="20" fill="#f97316"/>
+                    <g fill="white">
+                        <rect x="25" y="30" width="50" height="8" rx="2"/>
+                        <rect x="25" y="46" width="50" height="8" rx="2"/>
+                        <rect x="25" y="62" width="50" height="8" rx="2"/>
+                    </g>
+                </svg>
+                <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                    <span style="font-size: 0.9rem; font-weight: 800; letter-spacing: 0.5px;">
+                        <span style="color: white;">EDU</span><span style="color: #fed7aa;">CRYPT</span>
+                    </span>
+                    <span style="font-size: 0.75rem; opacity: 0.9; font-weight: 600;">{{ t.app_name }}</span>
+                </div>
+            </a>
+            <div class="navbar-nav ms-auto d-flex align-items-center">
+                <a class="nav-link" href="/"><i class="fas fa-home me-1"></i> {{ t.home }}</a>
+
+                <!-- Language Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-sm dropdown-toggle lang-dropdown" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-globe me-1"></i> {{ language_names[current_lang] }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                        {% for code, name in language_names.items() %}
+                        <li>
+                            <a class="dropdown-item {% if code == current_lang %}active{% endif %}" href="/change_language/{{ code }}">
+                                {% if code == 'en' %}<i class="fas fa-flag me-2"></i>{% endif %}
+                                {% if code == 'hi' %}<span class="me-2">🇮🇳</span>{% endif %}
+                                {% if code == 'ta' %}<span class="me-2">🇮🇳</span>{% endif %}
+                                {% if code == 'pa' %}<span class="me-2">🇮🇳</span>{% endif %}
+                                {% if code == 'mr' %}<span class="me-2">🇮🇳</span>{% endif %}
+                                {{ name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+
+            </div>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,217 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    MULTILINGUAL TEACHER ASSISTANT FLOW                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           USER INPUT OPTIONS                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────┐              ┌──────────────────┐
+    │   TEXT INPUT     │              │   VOICE INPUT    │
+    │   (Keyboard)     │              │   (Microphone)   │
+    │                  │              │                  │
+    │  "बल क्या है?"   │              │  [Speech Audio]  │
+    └────────┬─────────┘              └────────┬─────────┘
+             │                                 │
+             │                                 │
+             ├─────────────────────────────────┘
+             │
+             v
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        LANGUAGE DETECTION LAYER                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  TEXT PATH:                      VOICE PATH:                               │
+│  ┌────────────────────┐          ┌────────────────────┐                   │
+│  │ detect_language()  │          │ Sarvam AI STT API  │                   │
+│  │ (Python Backend)   │          │ Auto-detection     │                   │
+│  ├────────────────────┤          ├────────────────────┤                   │
+│  │ • Unicode ranges   │          │ • Speech analysis  │                   │
+│  │ • Script detection │          │ • Returns:         │                   │
+│  │ • Hinglish words   │          │   - Transcript     │                   │
+│  │                    │          │   - Language code  │                   │
+│  └─────────┬──────────┘          └─────────┬──────────┘                   │
+│            │                               │                               │
+│            └───────────────┬───────────────┘                               │
+│                            │                                               │
+└────────────────────────────┼───────────────────────────────────────────────┘
+                             │
+                             v
+                    ┌─────────────────┐
+                    │ Language: Hindi │
+                    │ en-IN/hi-IN/etc │
+                    └────────┬────────┘
+                             │
+                             v
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          FRONTEND (chat.html)                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  1. Update Language Indicator:                                             │
+│     ┌───────────────────────┐                                              │
+│     │  🇮🇳 Hindi             │  ← Visual feedback to user                  │
+│     │  Responds in your     │                                              │
+│     │  language             │                                              │
+│     └───────────────────────┘                                              │
+│                                                                             │
+│  2. Prepare API Request:                                                   │
+│     {                                                                       │
+│       message: "बल क्या है?",                                              │
+│       detected_language: "hi-IN",                                          │
+│       grade: "9",                                                           │
+│       sub_subject: "physics",                                              │
+│       history: [...]                                                        │
+│     }                                                                       │
+│                                                                             │
+└────────────────────────────────┬────────────────────────────────────────────┘
+                                 │
+                                 │ POST /api/chat
+                                 v
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        BACKEND API (app.py)                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  api_chat() endpoint:                                                       │
+│                                                                             │
+│  1. Extract data:                                                           │
+│     user_message = "बल क्या है?"                                           │
+│     detected_lang = "hi-IN"                                                 │
+│                                                                             │
+│  2. Map language code:                                                      │
+│     hi-IN → "Hindi"                                                         │
+│     en-IN → "English"                                                       │
+│     (using lang_map dictionary)                                             │
+│                                                                             │
+│  3. Enhance message:                                                        │
+│     enhanced_message = "[Language: Hindi] बल क्या है?"                     │
+│                                                                             │
+│  4. Build messages array:                                                   │
+│     [                                                                       │
+│       {role: "system", content: system_prompt},                            │
+│       {role: "user", content: "[Language: Hindi] बल क्या है?"}             │
+│     ]                                                                       │
+│                                                                             │
+└────────────────────────────────┬────────────────────────────────────────────┘
+                                 │
+                                 v
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         SYSTEM PROMPT                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  🌍 MULTILINGUAL RESPONSE REQUIREMENT - HIGHEST PRIORITY 🌍                │
+│                                                                             │
+│  YOU MUST RESPOND IN THE SAME LANGUAGE AS THE USER'S QUESTION.            │
+│                                                                             │
+│  LANGUAGE MATCHING RULES:                                                  │
+│  1. English (A-Z) → Respond in ENGLISH ONLY                                │
+│  2. Hindi (अ-ह) → Respond in HINDI ONLY                                    │
+│  3. Hinglish (Latin + Hindi) → Respond in HINGLISH                         │
+│  ... (all 12 languages)                                                     │
+│                                                                             │
+│  CRITICAL EXAMPLES:                                                         │
+│  ✅ User: "What is force?" → "Force is..."                                 │
+│  ✅ User: "बल क्या है?" → "बल एक धक्का..."                                │
+│  ❌ NEVER cross languages!                                                  │
+│                                                                             │
+│  You are a CBSE Teaching Assistant...                                      │
+│  [Rest of teaching instructions]                                           │
+│                                                                             │
+└────────────────────────────────┬────────────────────────────────────────────┘
+                                 │
+                                 v
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      AWS BEDROCK (Claude Model)                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Input:                                                                     │
+│  ┌─────────────────────────────────────────────────┐                       │
+│  │ System: [Multilingual instructions]             │                       │
+│  │ User: [Language: Hindi] बल क्या है?             │                       │
+│  └─────────────────────────────────────────────────┘                       │
+│                                                                             │
+│  Processing:                                                                │
+│  • Detects [Language: Hindi] tag                                           │
+│  • Reads system prompt instructions                                        │
+│  • Generates response in Hindi                                             │
+│                                                                             │
+│  Output:                                                                    │
+│  ┌─────────────────────────────────────────────────┐                       │
+│  │ "बल एक धक्का या खिंचाव है जो किसी वस्तु की      │                       │
+│  │ स्थिति या गति को बदलता है। यह एक vector        │                       │
+│  │ राशि है जिसमें परिमाण और दिशा दोनों होते हैं..."│                       │
+│  └─────────────────────────────────────────────────┘                       │
+│                                                                             │
+└────────────────────────────────┬────────────────────────────────────────────┘
+                                 │
+                                 │ Response (JSON)
+                                 v
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        BACKEND RESPONSE                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  return jsonify({                                                           │
+│    "response": "बल एक धक्का या खिंचाव है...",                              │
+│    "detected_language": "Hindi"                                             │
+│  })                                                                         │
+│                                                                             │
+└────────────────────────────────┬────────────────────────────────────────────┘
+                                 │
+                                 v
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        FRONTEND RENDERING                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  1. Display message:                                                        │
+│     ┌─────────────────────────────────────────┐                            │
+│     │ 🤖 Assistant                            │                            │
+│     │ ┌─────────────────────────────────────┐ │                            │
+│     │ │ बल एक धक्का या खिंचाव है जो किसी   │ │                            │
+│     │ │ वस्तु की स्थिति या गति को बदलता    │ │  🔊 ← TTS Button           │
+│     │ │ है। यह एक vector राशि है...         │ │                            │
+│     │ └─────────────────────────────────────┘ │                            │
+│     └─────────────────────────────────────────┘                            │
+│                                                                             │
+│  2. Add to chat history                                                     │
+│                                                                             │
+│  3. TTS (Text-to-Speech) available:                                        │
+│     Click 🔊 → Sarvam AI TTS API                                            │
+│     → Audio in Hindi                                                        │
+│     → Male (Shubh) or Female (Pooja) voice                                 │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         LANGUAGE FLOW SUMMARY                                ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  Input → Detection → Tag → Prompt → Claude → Response → Display → Audio    ║
+║                                                                              ║
+║  Hindi → "Hindi"   → [Hi] → "Hindi" → Hindi  → Hindi    → Show   → Hindi   ║
+║  input   detected    tag    instruct  process  response   user     audio    ║
+║                                                                              ║
+║  Same language throughout the entire pipeline! ✅                           ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                       KEY TECHNICAL COMPONENTS                               ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  1. detect_language()      → Python function (Unicode-based)                ║
+║  2. Sarvam AI STT          → Voice language detection                       ║
+║  3. Language indicator     → Real-time UI widget                            ║
+║  4. [Language: X] tag      → Explicit instruction to Claude                 ║
+║  5. Enhanced system prompt → Multilingual rules                             ║
+║  6. AWS Bedrock Claude     → Natural language generation                    ║
+║  7. Sarvam AI TTS          → Voice synthesis in detected language           ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

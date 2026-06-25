@@ -1,0 +1,7 @@
+flask==3.0.0
+python-dotenv==1.0.0
+boto3>=1.34.0
+flask-sock==0.7.0
+websocket-client 
+requests
+sarvamai

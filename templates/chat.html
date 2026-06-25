@@ -1,0 +1,858 @@
+{% extends "base.html" %}
+
+{% block title %}Class {{ grade }} - {{ sub_subject|title }} Chat{% endblock %}
+
+{% block extra_styles %}
+.chat-container {
+    height: calc(100vh - 280px);
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f1f5f9;
+    border-radius: 12px;
+}
+
+.message {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+    flex-direction: row-reverse;
+}
+
+.message-bubble {
+    max-width: 75%;
+    padding: 12px 18px;
+    border-radius: 16px;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.message.user .message-bubble {
+    background: var(--orange);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message.assistant .message-bubble {
+    background: white;
+    color: #1e293b;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.message-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.message.user .message-avatar {
+    background: var(--orange);
+    color: white;
+}
+
+.message.assistant .message-avatar {
+    background: #10b981;
+    color: white;
+}
+
+.chat-input-area {
+    padding: 16px 0;
+}
+
+.chat-input-area .input-group {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.chat-input-area input {
+    border: none;
+    padding: 16px 20px;
+    font-size: 15px;
+}
+
+.chat-input-area input:focus {
+    box-shadow: none;
+}
+
+.chat-input-area button {
+    padding: 16px 24px;
+    border: none;
+    background: var(--orange);
+    color: white;
+    font-weight: 600;
+}
+
+.chat-input-area button:hover {
+    background: var(--primary-light);
+    color: white;
+}
+
+.mic-button {
+    padding: 16px 20px;
+    border: none;
+    background: #64748b;
+    color: white;
+    cursor: pointer;
+}
+
+.mic-button:hover {
+    background: #475569;
+}
+
+.mic-button.recording {
+    background: #ef4444;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+.speaker-button {
+    margin-left: 8px;
+    padding: 4px 10px;
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.speaker-button:hover {
+    background: #059669;
+    transform: scale(1.1);
+}
+
+.speaker-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.gender-toggle {
+    display: inline-flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.gender-btn {
+    padding: 6px 14px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.gender-btn.active {
+    background: var(--orange);
+    color: white;
+    border-color: var(--orange);
+}
+
+.gender-btn:hover:not(.active) {
+    border-color: var(--orange);
+}
+
+#livePreview {
+    display: none;
+}
+
+.topic-chip {
+    display: inline-block;
+    padding: 6px 14px;
+    margin: 4px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.topic-chip:hover {
+    background: var(--orange);
+    color: white;
+    border-color: var(--orange);
+}
+
+.quick-action {
+    padding: 8px 16px;
+    margin: 4px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.quick-action:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+}
+
+.typing-indicator {
+    display: none;
+    padding: 12px 18px;
+    background: white;
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    width: fit-content;
+}
+
+.typing-indicator span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #94a3b8;
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+.sidebar-info {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.message-bubble pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+}
+
+.message-bubble code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.message.assistant .message-bubble code {
+    background: #f1f5f9;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3 px-4">
+    <nav class="breadcrumb-custom mb-3" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none">{{ t.home }}</a></li>
+            <li class="breadcrumb-item"><a href="/subjects/{{ grade }}" class="text-decoration-none">{{ t.class }} {{ grade }}</a></li>
+            <li class="breadcrumb-item"><a href="/sub_subjects/{{ grade }}/{{ parent_subject }}" class="text-decoration-none">{{ t[parent_subject] if parent_subject in t else parent_subject_name }}</a></li>
+            <li class="breadcrumb-item active">{{ t[sub_subject] if sub_subject in t else sub_subject|title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="sidebar-info mb-3">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-info-circle me-2" style="color: var(--orange);"></i>{{ t.session_info }}
+                </h6>
+                <p class="mb-1 small"><strong>{{ t.class }}:</strong> {{ grade }}th</p>
+                <p class="mb-1 small"><strong>{{ t.subject }}:</strong> {{ sub_subject|title }}</p>
+                <p class="mb-0 small"><strong>{{ t.students }}:</strong> {{ student_count }}</p>
+            </div>
+
+            <div class="sidebar-info mb-3">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-list me-2" style="color: #10b981;"></i>{{ t.cbse_topics }}
+                </h6>
+                <div>
+                    {% for topic in topics %}
+                    <span class="topic-chip" onclick="askAboutTopic('{{ topic }}')">{{ t[topic] if topic in t else topic }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="sidebar-info mb-3">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-language me-2" style="color: #8b5cf6;"></i>{{ t.language }}
+                </h6>
+                <div id="languageIndicator" style="padding: 8px 12px; background: #f1f5f9; border-radius: 8px; font-size: 13px;">
+                    <span id="detectedLangText">{{ language_names[current_lang] }}</span>
+                    <small class="text-muted d-block mt-1">{{ t.responds_in_language }}</small>
+                </div>
+            </div>
+
+            <div class="sidebar-info">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-magic me-2" style="color: #f59e0b;"></i>{{ t.quick_actions }}
+                </h6>
+                <div class="d-flex flex-wrap">
+                    <button class="quick-action" onclick="quickAction('plan')">
+                        <i class="fas fa-calendar-alt me-1"></i>{{ t.generate_lesson }}
+                    </button>
+                    <button class="quick-action" onclick="quickAction('quiz')">
+                        <i class="fas fa-question-circle me-1"></i>{{ t.create_quiz }}
+                    </button>
+                    <button class="quick-action" onclick="quickAction('example')">
+                        <i class="fas fa-calculator me-1"></i>{{ t.solved_example }}
+                    </button>
+                    <button class="quick-action" onclick="quickAction('summary')">
+                        <i class="fas fa-file-alt me-1"></i>{{ t.explain_concept }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="col-md-9">
+            <!-- Gender Toggle -->
+            <div class="gender-toggle mb-2">
+                <button class="gender-btn active" id="btn-male" onclick="setGender('male')">
+                    🎙 {{ t.male_teacher }}
+                </button>
+                <button class="gender-btn" id="btn-female" onclick="setGender('female')">
+                    🎙 {{ t.female_teacher }}
+                </button>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                        <div class="message-bubble">
+                            <strong>{{ t.hello_teacher }} {{ username }}!</strong> 👋<br><br>
+                            {{ t.ai_assistant_intro }} <strong>{{ t.class }} {{ grade }} {{ sub_subject|title }}</strong>. {{ t.can_help_with }}
+                            <ul class="mt-2 mb-0">
+                                <li>📋 {{ t.creating_lesson_plans }}</li>
+                                <li>❓ {{ t.generating_quizzes }}</li>
+                                <li>📝 {{ t.providing_examples }}</li>
+                                <li>📖 {{ t.topic_summaries }}</li>
+                            </ul>
+                            <br>
+                            <strong>🌍 {{ t.multilingual_support }}</strong><br>
+                            {{ t.ask_in_languages }}<br><br>
+                            {{ t.click_topic_or_type }}
+                        </div>
+                    </div>
+                    <div class="typing-indicator" id="typingIndicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <form id="chatForm" onsubmit="sendMessage(event)">
+                        <div class="input-group">
+                            <button type="button" class="mic-button" id="micBtn" onclick="toggleMic()">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <input type="text" id="messageInput" class="form-control" placeholder="{{ t.type_message }}"
+                                   autocomplete="off" aria-label="Chat message input">
+
+                            <button type="submit" class="btn" id="sendBtn">
+                                <i class="fas fa-paper-plane me-1"></i> {{ t.send }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const grade = "{{ grade }}";
+    const subSubject = "{{ sub_subject }}";
+    let chatHistory = [];
+
+    // Translation data for JavaScript
+    const CREATE_LESSON_TEXT = "{{ t.create_lesson_plan_for }}";
+    const FOR_CLASS_TEXT = "{{ t.for_todays_class }}";
+    const TOPIC_TRANSLATIONS = {
+        {% for topic in topics %}
+        "{{ topic }}": "{{ t[topic] if topic in t else topic }}"{{ "," if not loop.last else "" }}
+        {% endfor %}
+    };
+
+    // Quick Action translations
+    const QUICK_ACTIONS = {
+        plan: "{{ t.quick_action_plan }}",
+        quiz: "{{ t.quick_action_quiz }}",
+        example: "{{ t.quick_action_example }}",
+        summary: "{{ t.quick_action_summary }}"
+    };
+
+    // Map interface language to STT/TTS language codes
+    const INTERFACE_LANG_TO_CODE = {
+        "en": "en-IN",
+        "hi": "hi-IN",
+        "ta": "ta-IN",
+        "pa": "pa-IN",
+        "mr": "mr-IN"
+    };
+
+    // STT variables
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let detectedLangCode = INTERFACE_LANG_TO_CODE["{{ current_lang }}"] || "en-IN";
+    let isRecording = false;
+
+    // TTS variables
+    let currentAudioCtx = null;
+    let currentAudioSource = null;
+    let currentAudioBuffer = null;
+    let audioStartTime = 0;
+    let audioPauseTime = 0;
+    let isAudioPlaying = false;
+    let currentSpeakerBtn = null;
+
+    // Gender variable
+    let selectedGender = "male";
+
+    function scrollToBottom() {
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function updateLanguageIndicator(language) {
+        const langText = document.getElementById('detectedLangText');
+        if (langText) {
+            langText.textContent = language;
+
+            // Add emoji based on language
+            const langEmojis = {
+                'English': '🇬🇧',
+                'Hindi': '🇮🇳',
+                'Hinglish': '🇮🇳',
+                'Tamil': '🇮🇳',
+                'Telugu': '🇮🇳',
+                'Bengali': '🇮🇳',
+                'Gujarati': '🇮🇳',
+                'Kannada': '🇮🇳',
+                'Malayalam': '🇮🇳',
+                'Marathi': '🇮🇳',
+                'Punjabi': '🇮🇳',
+                'Odia': '🇮🇳'
+            };
+
+            const emoji = langEmojis[language] || '🌍';
+            langText.textContent = `${emoji} ${language}`;
+        }
+    }
+
+    function addMessage(role, content) {
+        const chatMessages = document.getElementById('chatMessages');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', role);
+
+        const avatarIcon = role === 'user' ? 'fa-user' : 'fa-robot';
+        const formattedContent = formatMessage(content);
+
+        // Add speaker button for assistant messages
+        const speakerBtn = role === 'assistant'
+            ? `<button class="speaker-button" data-text="${content.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}" onclick="handleTTSClick(this)">🔊</button>`
+            : '';
+
+        messageDiv.innerHTML = `
+            <div class="message-avatar"><i class="fas ${avatarIcon}"></i></div>
+            <div class="message-bubble">${formattedContent}${speakerBtn}</div>
+        `;
+
+        chatMessages.insertBefore(messageDiv, typingIndicator);
+        scrollToBottom();
+    }
+
+    function formatMessage(text) {
+        // Convert markdown-like formatting to HTML
+        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        text = text.replace(/```([\s\S]*?)```/g, '<pre>$1</pre>');
+        text = text.replace(/`(.*?)`/g, '<code>$1</code>');
+        text = text.replace(/\n/g, '<br>');
+        return text;
+    }
+
+    function showTyping() {
+        document.getElementById('typingIndicator').style.display = 'block';
+        scrollToBottom();
+    }
+
+    function hideTyping() {
+        document.getElementById('typingIndicator').style.display = 'none';
+    }
+
+    async function sendMessage(event) {
+        if (event) event.preventDefault();
+
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        if (!message) return;
+
+        // Add user message to UI
+        addMessage('user', message);
+        chatHistory.push({ role: 'user', content: message });
+        input.value = '';
+
+        // Disable input while waiting
+        input.disabled = true;
+        document.getElementById('sendBtn').disabled = true;
+        showTyping();
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: message,
+                    grade: grade,
+                    sub_subject: subSubject,
+                    history: chatHistory,
+                    detected_language: detectedLangCode,  // Pass detected language from STT
+                    gender: selectedGender  // Pass selected gender
+                })
+            });
+
+            const data = await response.json();
+            hideTyping();
+
+            // Update detected language for TTS and display
+            if (data.detected_language) {
+                console.log("Detected language:", data.detected_language);
+                updateLanguageIndicator(data.detected_language);
+            }
+
+            // Add assistant response
+            addMessage('assistant', data.response);
+            chatHistory.push({ role: 'assistant', content: data.response });
+        } catch (error) {
+            hideTyping();
+            addMessage('assistant', '❌ Something went wrong. Please try again.');
+        }
+
+        // Re-enable input
+        input.disabled = false;
+        document.getElementById('sendBtn').disabled = false;
+        input.focus();
+    }
+
+    function askAboutTopic(topic) {
+        const translatedTopic = TOPIC_TRANSLATIONS[topic] || topic;
+        document.getElementById('messageInput').value = `${CREATE_LESSON_TEXT} "${translatedTopic}" ${FOR_CLASS_TEXT}`;
+        document.getElementById('messageInput').focus();
+    }
+
+    function quickAction(type) {
+        const input = document.getElementById('messageInput');
+        input.value = QUICK_ACTIONS[type] || '';
+        // Set detected language to match the interface language so LLM responds in the same language
+        detectedLangCode = INTERFACE_LANG_TO_CODE["{{ current_lang }}"] || "en-IN";
+        input.focus();
+    }
+
+    // Auto-focus on input
+    document.getElementById('messageInput').focus();
+
+    // ========================
+    // STT Functions
+    // ========================
+
+    async function startMic() {
+        try {
+            audioChunks = [];
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+
+            const options = { mimeType: "audio/webm;codecs=opus" };
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                options.mimeType = "audio/webm";
+            }
+
+            mediaRecorder = new MediaRecorder(stream, options);
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    audioChunks.push(e.data);
+                }
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                await transcribeAudio(audioBlob);
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            mediaRecorder.onerror = (error) => {
+                console.error("MediaRecorder error:", error);
+                stopMic();
+            };
+
+            mediaRecorder.start();
+            setMicState("recording");
+            document.getElementById('messageInput').placeholder = "🎙 Recording...";
+            document.getElementById('messageInput').value = "";
+        } catch (error) {
+            console.error("Microphone access denied:", error);
+            alert("Microphone access denied. Please grant permission and try again.");
+        }
+    }
+
+    function stopMic() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            document.getElementById('messageInput').placeholder = "⏳ Processing...";
+            mediaRecorder.stop();
+        }
+        setMicState("idle");
+    }
+
+    async function transcribeAudio(audioBlob) {
+        try {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+
+            const response = await fetch('/api/stt/transcribe', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.error) {
+                console.error("Transcription error:", result.error);
+                alert("Transcription failed: " + result.error);
+            } else {
+                document.getElementById('messageInput').value = result.transcript || "";
+                if (result.language_code) {
+                    detectedLangCode = result.language_code;
+
+                    // Map language codes to names and update indicator
+                    const langMap = {
+                        "en-IN": "English",
+                        "hi-IN": "Hindi",
+                        "ta-IN": "Tamil",
+                        "te-IN": "Telugu",
+                        "bn-IN": "Bengali",
+                        "gu-IN": "Gujarati",
+                        "kn-IN": "Kannada",
+                        "ml-IN": "Malayalam",
+                        "mr-IN": "Marathi",
+                        "pa-IN": "Punjabi",
+                        "od-IN": "Odia"
+                    };
+                    const langName = langMap[result.language_code] || "English";
+                    updateLanguageIndicator(langName);
+                    console.log("Voice detected in:", langName);
+                }
+            }
+        } catch (error) {
+            console.error("Error transcribing audio:", error);
+            alert("Failed to transcribe audio. Please try again.");
+        } finally {
+            document.getElementById('messageInput').placeholder = "{{ t.type_message }}";
+        }
+    }
+
+    function setMicState(state) {
+        const micBtn = document.getElementById('micBtn');
+        if (state === "recording") {
+            micBtn.classList.add('recording');
+            micBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        } else {
+            micBtn.classList.remove('recording');
+            micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        }
+    }
+
+    function toggleMic() {
+        if (!isRecording) {
+            startMic();
+            isRecording = true;
+        } else {
+            stopMic();
+            isRecording = false;
+        }
+    }
+
+    // ========================
+    // TTS Functions
+    // ========================
+
+    function handleTTSClick(btn) {
+        if (currentSpeakerBtn === btn && isAudioPlaying) {
+            // Pause current audio
+            pauseTTS(btn);
+        } else if (currentSpeakerBtn === btn && !isAudioPlaying && currentAudioBuffer) {
+            // Resume paused audio
+            resumeTTS(btn);
+        } else {
+            // Stop any other playing audio and start new
+            stopAllAudio();
+            const text = btn.getAttribute('data-text');
+            playTTS(btn, text);
+        }
+    }
+
+    async function playTTS(btn, text) {
+        currentSpeakerBtn = btn;
+        const speaker = localStorage.getItem("ttsGender") === "female" ? "pooja" : "shubh";
+
+        btn.innerHTML = "⏳";
+        btn.disabled = true;
+
+        try {
+            // Create unique URL with timestamp to avoid caching
+            const timestamp = Date.now();
+            const params = new URLSearchParams({
+                text: text,
+                language_code: detectedLangCode,
+                speaker: speaker,
+                t: timestamp
+            });
+
+            // Use Audio element with GET URL (convert to GET method)
+            const audioUrl = `/api/tts/stream?${params.toString()}`;
+            const audio = new Audio(audioUrl);
+
+            currentAudioCtx = audio;
+            currentAudioBuffer = audio;
+
+            // Start playing as soon as enough data is loaded
+            audio.addEventListener('loadeddata', () => {
+                console.log("Audio data loaded, starting playback");
+                btn.innerHTML = "⏸";
+                btn.disabled = false;
+                audio.play().catch(e => console.error("Play error:", e));
+                isAudioPlaying = true;
+            });
+
+            audio.addEventListener('ended', () => {
+                console.log("Audio playback ended");
+                resetSpeakerButton(btn);
+            });
+
+            audio.addEventListener('error', (e) => {
+                console.error("Audio error:", e);
+                alert("Audio playback failed. Please try again.");
+                resetSpeakerButton(btn);
+            });
+
+            // Preload to start buffering immediately
+            audio.preload = 'auto';
+            audio.load();
+
+        } catch (error) {
+            console.error("TTS error:", error);
+            alert("Text-to-speech failed. Please try again.");
+            resetSpeakerButton(btn);
+        }
+    }
+
+    function pauseTTS(btn) {
+        if (!currentAudioBuffer) return;
+
+        const audio = currentAudioBuffer;
+        if (audio && audio.pause) {
+            audio.pause();
+            isAudioPlaying = false;
+            btn.innerHTML = "▶️";
+        }
+    }
+
+    function resumeTTS(btn) {
+        if (!currentAudioBuffer) return;
+
+        const audio = currentAudioBuffer;
+        if (audio && audio.play) {
+            audio.play();
+            isAudioPlaying = true;
+            btn.innerHTML = "⏸";
+        }
+    }
+
+    function stopAllAudio() {
+        if (currentAudioBuffer) {
+            const audio = currentAudioBuffer;
+            if (audio && audio.pause) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+        }
+
+        if (currentSpeakerBtn) {
+            resetSpeakerButton(currentSpeakerBtn);
+        }
+
+        currentAudioCtx = null;
+        currentAudioBuffer = null;
+        isAudioPlaying = false;
+        currentSpeakerBtn = null;
+    }
+
+    function resetSpeakerButton(btn) {
+        btn.innerHTML = "🔊";
+        btn.disabled = false;
+        isAudioPlaying = false;
+        currentAudioSource = null;
+        if (currentSpeakerBtn === btn) {
+            currentSpeakerBtn = null;
+            currentAudioBuffer = null;
+        }
+    }
+
+    function setGender(g) {
+        selectedGender = g;
+        localStorage.setItem("ttsGender", g);
+        document.getElementById("btn-male").classList.toggle("active", g === "male");
+        document.getElementById("btn-female").classList.toggle("active", g === "female");
+    }
+
+    // Initialize gender on page load
+    const savedGender = localStorage.getItem("ttsGender") || "male";
+    selectedGender = savedGender;
+    setGender(savedGender);
+</script>
+{% endblock %}
