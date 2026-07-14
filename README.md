@@ -18,3 +18,10 @@ python app.py
 - `templates/` contains the HTML templates
 - `static/` contains static assets
 - `data/` contains local data files
+
+## Daily Updates
+
+This repository is updated automatically every day.
+
+- Project activity log: `updates/daily-update.md`
+- OSS activity log: `updates/oss-activity/`
